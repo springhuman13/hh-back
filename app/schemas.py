@@ -9,3 +9,11 @@ class HackathonSchema(BaseModel):
     description: Optional[str] = None
     link: str
     focuses: List[TechFocusSchema] = []
+
+class HackathonOut(BaseModel):
+    title: str
+    description: str
+    link: str
+
+    class Config:
+        from_attributes = True

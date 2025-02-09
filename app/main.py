@@ -1,11 +1,16 @@
 from fastapi import FastAPI
-from app.routers import hackathons  # Убедись, что путь правильный
+from app.routers import hackathons
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 # Подключаем роуты
 app.include_router(hackathons.router, prefix="/hackathons", tags=["Hackathons"])
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Вы можете ограничить доступ конкретными доменами
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
