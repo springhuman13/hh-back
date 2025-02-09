@@ -8,7 +8,6 @@ class HackathonSchema(BaseModel):
     title: str
     description: Optional[str] = None
     link: str
-    focuses: List[TechFocusSchema] = []
 
 class HackathonOut(BaseModel):
     title: str
