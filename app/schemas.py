@@ -1,18 +1,25 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-class TechFocusSchema(BaseModel):
-    name: str
-
 class HackathonSchema(BaseModel):
+    id: int
     title: str
-    description: Optional[str] = None
+    img: str
+    description: str 
     link: str
+    place: Optional[str] = None
+    dates: Optional[str] = None
+    organizers: Optional[str] = None
+    tech_focus: Optional[str] = None
 
 class HackathonOut(BaseModel):
     title: str
-    description: str
     link: str
+    img: str
+    place: Optional[str] = None
+    dates: Optional[str] = None
+    organizers: Optional[str] = None
+    tech_focus: Optional[str] = None
 
     class Config:
         from_attributes = True
