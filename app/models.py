@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, TIMESTAMP, func
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, TIMESTAMP, func, DateTime
 from app.database import Base, relationship
 
 class Hackathon(Base):
@@ -10,7 +10,7 @@ class Hackathon(Base):
     image = Column(String)
     dates = Column(String)
     place = Column(String)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    created_at = Column(DateTime, default=func.now())
 
     organizers = relationship(
         "Organizer",
@@ -28,9 +28,9 @@ class User(Base):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     username = Column(String)
-    email = Column(String)
-    hashed_password = Column(String)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    created_at = Column(DateTime, default=func.now())
+
+    profile = relationship("Profile", back_populates="user", uselist=False)
 
 class Profile(Base):
     __tablename__ = "profile"
@@ -42,6 +42,9 @@ class Profile(Base):
     bio = Column(String)
     git_link = Column(String)
     tg_link = Column(String)
+    photo_url = Column(String)
+
+    user = relationship("User", back_populates="profile")
 
 class Role(Base):
     __tablename__ = "role"

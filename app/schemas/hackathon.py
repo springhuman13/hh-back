@@ -20,8 +20,9 @@ class HackathonOut(HackathonBase):
     organizers: list[OrganizerOut]
     tech_focuses: list[TechFocusOut]
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 class HackathonCreate(HackathonBase):
     pass

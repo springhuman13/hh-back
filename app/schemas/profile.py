@@ -5,15 +5,23 @@ from datetime import datetime
 # === PROFILE ===
 
 class ProfileBase(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
+    id: int
+
+class ProfileResponse(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    tg_link: str
+    photo_url: Optional[str] = None
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class ProfileOut(BaseModel):
     role_id: Optional[int]
     bio: Optional[str]
     git_link: Optional[str]
-    tg_link: Optional[str]
 
-class ProfileCreate(ProfileBase):
-    user_id: int
-
-class ProfileRead(ProfileBase):
-    id: int
+    model_config = {
+        "from_attributes": True
+    }
