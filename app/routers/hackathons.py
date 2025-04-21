@@ -61,5 +61,5 @@ def get_organizers(db: Session = Depends(get_db)):
 
 @router.get("/tech_focuses/", response_model=list[TechFocusOut])
 def get_tech_focuses(db: Session = Depends(get_db)):
-    tech_focuses = db.query(TechFocus)
+    tech_focuses = db.query(TechFocus).order_by(TechFocus.name).all()
     return tech_focuses

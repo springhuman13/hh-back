@@ -14,5 +14,5 @@ class TeamBase(BaseModel):
 class TeamCreate(TeamBase):
     pass
 
-class TeamRead(TeamBase):
+class TeamOut(TeamBase):
     id: int
