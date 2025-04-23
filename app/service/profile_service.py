@@ -1,10 +1,12 @@
 from fastapi import HTTPException
 import requests
-
+from typing import List
 from sqlalchemy.orm import Session
+
 from app.models import Profile
-from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse
-from app.models import User
+from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse, InterestsResponse
+from app.schemas.tech_focus import TechFocusOut
+from app.models import User, TechFocusToUser, TechFocus
 
 
 class ProfileService:
@@ -44,3 +46,20 @@ class ProfileService:
             )
         else:
             raise HTTPException(status_code=404, detail=f"GitHub user {user.profile.git_link} not found")
+        
+    def update_interests(self, user: User, tf_ids: list[int]):
+        self.db.query(TechFocusToUser).filter(TechFocusToUser.user_id == user.id).delete()
+        for tf_id in tf_ids:
+            self.db.add(TechFocusToUser(user_id=user.id, tf_id=tf_id))
+        self.db.commit()
+
+    def get_interests(self, user: User) -> List[TechFocusOut]:
+        links = self.db.query(TechFocusToUser).filter(TechFocusToUser.user_id == user.id).all()
+    
+        interests = []
+        for link in links:
+            tech_focus = self.db.query(TechFocus).filter(TechFocus.id == link.tf_id).first()
+            if tech_focus:
+                interests.append(TechFocusOut(id=tech_focus.id, name=tech_focus.name))
+    
+        return interests

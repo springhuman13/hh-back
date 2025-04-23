@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from typing import List
 
 from app.database import get_db
-
 from app.models import Role
 from app.schemas.role import RoleOut
 

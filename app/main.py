@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from app.routers import hackathons, auth, profile, role
 from fastapi.middleware.cors import CORSMiddleware
-from decouple import config
-
-SECRET_KEY = config("SECRET_KEY")
+from app.core.config import settings
 
 app = FastAPI()
 

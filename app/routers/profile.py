@@ -1,27 +1,21 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from uuid import uuid4
+import boto3
+from botocore.config import Config
+
 from app.auth.jwt import decode_access_token
 from app.database import get_db
-from sqlalchemy.orm import Session
-from app.models import User
+from app.models import User, Certificate
 from app.schemas.user import UserResponse
-from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse
+from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse, InterestsResponse
 from app.service.profile_service import ProfileService
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from app.service.s3_service import S3ServiceDep
+from app.core.config import settings
+from app.dependencies.auth import get_current_user
 
 router = APIRouter()
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    payload = decode_access_token(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    user_id = int(payload.get("sub"))
-    user = db.query(User).get(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
 
 @router.get("/me")
 async def get_current_user_profile(current_user: User = Depends(get_current_user)):
@@ -65,3 +59,35 @@ def update_git(
 async def get_git(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     service = ProfileService(db)
     return service.get_git(current_user)
+
+@router.get("/get_interests")
+async def get_interests(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    service = ProfileService(db)
+    return service.get_interests(current_user)
+
+@router.post("/update_interests")
+async def update_interests(
+    data: InterestsResponse,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    service = ProfileService(db)
+    return service.update_interests(current_user, data.interests)
+
+@router.post("/upload_certificate")
+async def upload_certificate(
+    s3: S3ServiceDep,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    s3.upload_file(file, user.id, db)
+    return {"status": "success"}
+
+@router.get("/get_certificates")
+async def get_certificates(
+    s3: S3ServiceDep,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return s3.get_all(user, db)

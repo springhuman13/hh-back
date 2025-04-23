@@ -47,3 +47,6 @@ class GitResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class InterestsResponse(BaseModel):
+    interests: List[int]

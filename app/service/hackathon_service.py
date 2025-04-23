@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
-from app.models import Hackathon, TechFocus, TechFocusToHackathon, Organizer, OrganizerToHackathon
 from typing import Optional
+
+from app.models import Hackathon, TechFocus, TechFocusToHackathon, Organizer, OrganizerToHackathon
+
 
 
 class HackathonService:

@@ -28,6 +28,7 @@ class User(Base):
     team_memberships = relationship("TeamMember", back_populates="user")
     applications = relationship("Application", back_populates="user")
     checklist_to_user = relationship("CheckListToUser", back_populates="user")
+    certificates = relationship("Certificate", back_populates="user", cascade="all, delete")
 
 class Profile(Base):
     __tablename__ = "profile"
@@ -187,3 +188,14 @@ class CheckListToTeamMember(Base):
 
     checklist = relationship("CheckList", back_populates="checklist_to_tm")
     team_member = relationship("TeamMember", back_populates="checklist_to_tm")
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+    original_filename = Column(String)
+    s3_key = Column(String)
+    s3_url = Column(String)
+
+    user = relationship("User", back_populates="certificates")

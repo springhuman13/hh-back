@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
+
 from app.service.hackathon_service import HackathonService
 from app.models import Hackathon
 
