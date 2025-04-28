@@ -65,6 +65,36 @@ class TeamService:
             )
             for team in teams
         ]
+    def get_user_led_teams(self, user: User, db: Session) -> List[TeamResponse]:
+        teams = db.query(Team).options(
+            selectinload(Team.city),
+            selectinload(Team.hackathon),
+            selectinload(Team.members).selectinload(TeamMember.user),
+            selectinload(Team.members).selectinload(TeamMember.role),
+        ).filter(Team.leader_id == user.id).all()
+
+        return [
+            TeamResponse(
+                id=team.id,
+                name=team.name,
+                description=team.description,
+                city_name=team.city.name,
+                city_id=team.city_id,
+                hackathon_name=team.hackathon.name,
+                hackathon_id=team.hackathon_id,
+                hackathon_website=team.hackathon.website,
+                members=[
+                    TeamMemberInfo(
+                        id=member.id,
+                        role_id=member.role_id,
+                        role_name=member.role.name,
+                        user_id=member.user_id,
+                    )
+                    for member in team.members
+                ]
+            )
+            for team in teams
+        ]
 
     def get_filtered_team(self, filters: TeamFilter, db: Session, user: Optional[User] = None) -> List[TeamResponse]:
         query = db.query(Team).options(

@@ -38,3 +38,11 @@ async def get_filtered_teams(
     db: Session = Depends(get_db),
 ):
     return team_service.get_filtered_team(user=user, filters=filters, db=db)
+
+@router.get("/get_my_teams", response_model=list[TeamResponse])
+async def get_my_teams(
+    team_service: TeamServiceDep,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return team_service.get_user_led_teams(user=user, db=db)
