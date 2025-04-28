@@ -147,7 +147,7 @@ class ProfileService:
             bio=profile.bio,
             photo_url=profile.photo_url,
             git=git_info,
-            role_name=profile.role.name,
+            role_name=profile.role.name if profile.role else None,
             interests=interests,
             skills=skills,
             certificates=certificates

@@ -15,8 +15,12 @@ class TelegramAuthService:
             raise HTTPException(status_code=400, detail="Invalid Telegram authentication")
 
         username = params.get("username")
+        user_id = params.get("id")
+
         if not username:
-            raise HTTPException(status_code=400, detail="Username is required")
+            if not user_id:
+                raise HTTPException(status_code=400, detail="Cannot generate username: id is missing")
+            username = f"user_{user_id}"
 
         # Поиск пользователя по username
         user = db.query(User).filter(User.username == username).first()

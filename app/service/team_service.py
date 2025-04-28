@@ -107,13 +107,13 @@ class TeamService:
         if filters.name:
             query = query.filter(Team.name.ilike(f"%{filters.name}%"))
 
-        if filters.city:
+        if filters.city and len(filters.city) > 0:
             query = query.filter(Team.city_id.in_(filters.city))
 
-        if filters.hackathon:
+        if filters.hackathon and len(filters.hackathon) > 0:
             query = query.filter(Team.hackathon_id.in_(filters.hackathon))
 
-        if filters.role:
+        if filters.role and len(filters.role) > 0:
             query = query.join(Team.members).filter(
                 TeamMember.user_id == None,
                 TeamMember.role_id.in_(filters.role)

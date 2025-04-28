@@ -6,9 +6,9 @@ from datetime import datetime
 
 class UserProfile(BaseModel):
     user_id: int
-    selected_subskills: list[int]
-    tech_focuses: list[int]       
-    role_id: int        
+    selected_subskills: Optional[list[int]]
+    tech_focuses: Optional[list[int]]       
+    role_id: Optional[int]      
 
 class ChecklistPointInput(BaseModel):
     checklist_point_id: int
