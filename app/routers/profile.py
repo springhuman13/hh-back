@@ -1,16 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
-from uuid import uuid4
-import boto3
-from botocore.config import Config
+from typing import List
 
-from app.auth.jwt import decode_access_token
 from app.database import get_db
-from app.models import User, Certificate
+from app.models import User
 from app.schemas.user import UserResponse
-from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse, InterestsResponse
-from app.service.profile_service import ProfileService
+from app.schemas.profile import ProfileUpdate, ProfileUpdateGit, GitResponse, InterestsResponse, SkillsUpdateRequest, SkillChecklistGrouped, ProfileResponse, OtherUserProfileResponse
+from app.service.profile_service import ProfileServiceDep
 from app.service.s3_service import S3ServiceDep
 from app.core.config import settings
 from app.dependencies.auth import get_current_user
@@ -23,56 +19,46 @@ async def get_current_user_profile(current_user: User = Depends(get_current_user
         id=current_user.id,
         username=current_user.username,
         created_at=current_user.created_at,
-        profile={
-            "id": current_user.profile.id,
-            "first_name": current_user.profile.first_name,
-            "last_name": current_user.profile.last_name,
-            "tg_link": current_user.profile.tg_link,
-            "photo_url": current_user.profile.photo_url,
-            "bio": current_user.profile.bio,
-            "role_id": current_user.profile.role_id,
-            "git_link": current_user.profile.git_link,
-        }
+        profile=ProfileResponse.model_validate(current_user.profile)
     )
 
 @router.post("/update_profile")
 def update_profile(
+    profile_service: ProfileServiceDep,
     data: ProfileUpdate,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    service = ProfileService(db)
-    profile = service.update(user, **data.model_dump(exclude_unset=True))
+    profile_service.update(user, db, **data.model_dump(exclude_unset=True))
     return {"status": "success"}
 
 @router.post("/update_git")
 def update_git(
+    profile_service: ProfileServiceDep,
     data: ProfileUpdateGit,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    service = ProfileService(db)
-    profileGit = service.update(user, **data.model_dump(exclude_unset=True))
+    profile_service.update(user, db, **data.model_dump(exclude_unset=True))
     return {"status": "success"}
 
 @router.get("/get_git", response_model=GitResponse)
-async def get_git(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    service = ProfileService(db)
-    return service.get_git(current_user)
+async def get_git(profile_service: ProfileServiceDep, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return profile_service.get_git(current_user, db)
 
 @router.get("/get_interests")
-async def get_interests(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    service = ProfileService(db)
-    return service.get_interests(current_user)
+async def get_interests(profile_service: ProfileServiceDep, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return profile_service.get_interests(current_user, db)
 
 @router.post("/update_interests")
 async def update_interests(
+    profile_service: ProfileServiceDep,
     data: InterestsResponse,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    service = ProfileService(db)
-    return service.update_interests(current_user, data.interests)
+
+    return profile_service.update_interests(current_user, data.interests, db)
 
 @router.post("/upload_certificate")
 async def upload_certificate(
@@ -91,3 +77,30 @@ async def get_certificates(
     db: Session = Depends(get_db)
 ):
     return s3.get_all(user, db)
+
+@router.get("/get_skills", response_model=List[SkillChecklistGrouped])
+async def get_skills(
+    profile_service: ProfileServiceDep,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    return profile_service.get_skills_grouped(user, db)
+
+@router.post("/update_skills")
+async def update_skills(
+    profile_service: ProfileServiceDep,
+    skills: SkillsUpdateRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    profile_service.update_skills(user, skills.skills, db)
+    return {"status": "success"}
+
+@router.get("/{user_id}", response_model=OtherUserProfileResponse)
+async def get_other_user_profile(
+    profile_service: ProfileServiceDep,
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    return profile_service.get_other_user_profile(user_id=user_id, db=db)
+    

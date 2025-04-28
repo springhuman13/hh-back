@@ -29,6 +29,7 @@ class User(Base):
     applications = relationship("Application", back_populates="user")
     checklist_to_user = relationship("CheckListToUser", back_populates="user")
     certificates = relationship("Certificate", back_populates="user", cascade="all, delete")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete")
 
 class Profile(Base):
     __tablename__ = "profile"
@@ -88,6 +89,7 @@ class TeamMember(Base):
     user = relationship("User", back_populates="team_memberships")
     role = relationship("Role", back_populates="team_members")
     checklist_to_tm = relationship("CheckListToTeamMember", back_populates="team_member")
+    applications = relationship("Application", back_populates="team_member")
 
 class ApplicationStatus(Base):
     __tablename__ = "application_status"
@@ -102,12 +104,13 @@ class Application(Base):
     team_id = Column(Integer, ForeignKey("team.id"))
     user_id = Column(Integer, ForeignKey("user.id"))
     status_id = Column(Integer, ForeignKey("application_status.id"))
-    message = Column(String)
+    team_member_id = Column(Integer, ForeignKey("team_member.id"))
     created_at = Column(DateTime, default=func.now())
 
     team = relationship("Team", back_populates="applications")
     user = relationship("User", back_populates="applications")
     status = relationship("ApplicationStatus", back_populates="applications")
+    team_member = relationship("TeamMember", back_populates="applications")
 
 class TechFocus(Base):
     __tablename__ = "tech_focus"
@@ -149,8 +152,6 @@ class CheckList(Base):
 
     checklist_to_role = relationship("CheckListToRole", back_populates="checklist")
     checklist_points = relationship("CheckListPoint", back_populates="checklist")
-    checklist_to_user = relationship("CheckListToUser", back_populates="checklist")
-    checklist_to_tm = relationship("CheckListToTeamMember", back_populates="checklist")
 
 class CheckListToRole(Base):
     __tablename__ = "check_list_to_role"
@@ -167,26 +168,27 @@ class CheckListPoint(Base):
     description = Column(String)
     cl_id = Column(Integer, ForeignKey("check_list.id"))
 
+    checklist_to_user = relationship("CheckListToUser", back_populates="checklist_points")
     checklist = relationship("CheckList", back_populates="checklist_points")
+    checklist_to_tm = relationship("CheckListToTeamMember", back_populates="checklist_points")
 
 class CheckListToUser(Base):
     __tablename__ = "check_list_to_user"
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    cl_id = Column(Integer, ForeignKey("check_list.id"))
+    clp_id = Column(Integer, ForeignKey("check_list_point.id"))
     user_id = Column(Integer, ForeignKey("user.id"))
-    grade = Column(Integer)
 
-    checklist = relationship("CheckList", back_populates="checklist_to_user")
+    checklist_points = relationship("CheckListPoint", back_populates="checklist_to_user")
     user = relationship("User", back_populates="checklist_to_user")
 
 class CheckListToTeamMember(Base):
     __tablename__ = "check_list_to_team_member"
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    cl_id = Column(Integer, ForeignKey("check_list.id"))
+    clp_id = Column(Integer, ForeignKey("check_list_point.id"))
     tm_id = Column(Integer, ForeignKey("team_member.id"))
-    grade = Column(Integer)
+    weight = Column(Integer)
 
-    checklist = relationship("CheckList", back_populates="checklist_to_tm")
+    checklist_points = relationship("CheckListPoint", back_populates="checklist_to_tm")
     team_member = relationship("TeamMember", back_populates="checklist_to_tm")
 
 class Certificate(Base):
@@ -199,3 +201,17 @@ class Certificate(Base):
     s3_url = Column(String)
 
     user = relationship("User", back_populates="certificates")
+
+class Notification(Base):
+    __tablename__ = "notification"
+
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    user_id = Column(Integer, ForeignKey("user.id")) 
+    message = Column(String) 
+    link = Column(String, nullable=True)
+    type = Column(String, default="info")
+    application_id = Column(Integer, nullable=True) 
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=func.now())
+
+    user = relationship("User", back_populates="notifications")

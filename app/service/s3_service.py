@@ -49,6 +49,8 @@ class S3Service:
                 Params={'Bucket': bucket_name, 'Key': object_key},
                 ExpiresIn=expiration
             )
+            if url.startswith("http://"):
+                    url = "https://" + url[len("http://"):]
             return url
         except NoCredentialsError:
             print("Ошибка: Нет учетных данных для доступа к S3.")
