@@ -33,7 +33,8 @@ class TeamMemberInfo(BaseModel):
     id: int
     role_id: int
     role_name: str
-    user_id: Optional[int]  # None — если роль свободна
+    user_id: Optional[int]
+    user_tg: Optional[str] = None
 
     model_config = {
         "from_attributes": True

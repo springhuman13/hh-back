@@ -89,6 +89,7 @@ class TeamService:
                         role_id=member.role_id,
                         role_name=member.role.name,
                         user_id=member.user_id,
+                        user_tg=member.user.profile.tg_link if member.user and member.user.profile else None
                     )
                     for member in team.members
                 ]
@@ -144,7 +145,6 @@ class TeamService:
             for team in teams
         ]
 
-        # Конвертация User -> UserProfile
         user_profile = None
         if user:
             if not user.profile:
