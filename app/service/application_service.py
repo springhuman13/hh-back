@@ -47,7 +47,7 @@ class ApplicationService:
             user_id=team_member.team.leader_id,
             message=f"Новая заявка в команду {team_member.team.name}",
             db=db,
-            link=f"https://hahackathon.ru.tuna.am/view_profile.html?id={user.id}", #ДОДЕЛАТЬ
+            link=f"https://hahackathon.ru.tuna.am/view_profile.html?id={user.id}", 
             type="application",
             application_id=application.id
         )
